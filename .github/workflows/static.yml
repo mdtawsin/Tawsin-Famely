@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>তাওসিন ফ্যামিলি হিসাব</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    input, select { margin: 5px; padding: 5px; }
+    table { border-collapse: collapse; margin-top: 20px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .delete-btn { background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+
+    /* নতুন স্টাইল */
+    .income-row { background-color: #c8f7c5; } /* সবুজ ব্যাকগ্রাউন্ড */
+    .expense-row { background-color: #f7c5c5; } /* লাল ব্যাকগ্রাউন্ড */
+  </style>
+</head>
+<body>
+
+  <h2>তাওসিন ফ্যামিলি হিসাব</h2>
+
+  <form id="entryForm">
+    <input type="text" id="amount" placeholder="টাকার পরিমাণ" required />
+    <input type="text" id="reason" placeholder="কারণে" required />
+    <select id="type">
+      <option value="income">আয়</option>
+      <option value="expense">খরচ</option>
+    </select>
+    <input type="datetime-local" id="datetime" required />
+    <button type="submit">সংরক্ষণ</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ধরন</th>
+        <th>টাকা</th>
+        <th>কারণ</th>
+        <th>তারিখ</th>
+        <th>ডিলিট</th>
+      </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('entryForm');
+    const tableBody = document.getElementById('dataTable');
+
+    let records = JSON.parse(localStorage.getItem('tawsinRecords')) || [];
+
+    function saveRecords() {
+      localStorage.setItem('tawsinRecords', JSON.stringify(records));
+    }
+
+    function renderTable() {
+      tableBody.innerHTML = '';
+      records.forEach((record, index) => {
+        const row = document.createElement('tr');
+        row.className = record.type === 'income' ? 'income-row' : 'expense-row'; // ব্যাকগ্রাউন্ড রঙ ঠিক করল
+        row.innerHTML = `
+          <td>${record.type === 'income' ? 'আয়' : 'খরচ'}</td>
+          <td>${record.amount}</td>
+          <td>${record.reason}</td>
+          <td>${record.datetime}</td>
+          <td><button class="delete-btn" onclick="deleteRecord(${index})">❌</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function deleteRecord(index) {
+      if (confirm("আপনি কি এই তথ্যটি মুছে ফেলতে চান?")) {
+        records.splice(index, 1);
+        saveRecords();
+        renderTable();
+      }
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const newRecord = {
+        amount: document.getElementById('amount').value,
+        reason: document.getElementById('reason').value,
+        type: document.getElementById('type').value,
+        datetime: document.getElementById('datetime').value
+      };
+      records.push(newRecord);
+      saveRecords();
+      renderTable();
+      form.reset();
+    });
+
+    renderTable();
+  </script>
+
+</body>
+</html>
